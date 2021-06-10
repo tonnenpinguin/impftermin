@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import {
   getAppointmentUrl,
   isInPast,
+  log,
   sleep,
   soundTheFanfares,
   toLocalTime,
@@ -21,7 +22,7 @@ async function getFreeSlotsForDay(date: moment.Moment, vaccine: Vaccine) {
   const result: ApiResponse = await response.json();
   const r = result.slots.filter((slot) => slot.free_spots > 0);
 
-  return r;
+  return result.slots;
 }
 
 const vaccineEntries = Object.entries(Vaccine).filter(
@@ -33,7 +34,7 @@ const CHECK_DAYS_FROM_NOW = 14;
 async function getSlots() {
   const allSlots: Slot[] = [];
   for (const [vaccineName, vaccineId] of vaccineEntries) {
-    console.log(`Requesting Data for ${vaccineName} and id ${vaccineId}`);
+    log(`Requesting Data for ${vaccineName} and id ${vaccineId}`);
     const now = moment();
     const promises = [...Array(CHECK_DAYS_FROM_NOW).keys()].map(
       async (daysFromNow) => {
@@ -50,19 +51,19 @@ async function getSlots() {
 
 function printSlot(slot: Slot) {
   const slotLocalTime = toLocalTime(slot.slot.check_in_at);
-  console.log("Vaccine:", Vaccine[slot.slot.gym_id]);
+  log("Vaccine:", Vaccine[slot.slot.gym_id]);
   if (isInPast(slotLocalTime)) {
-    console.log("!! Slot is in the past !!");
-    console.log(
+    log("!! Slot is in the past !!");
+    log(
       "Please reset your time to something before",
       slotLocalTime.format(),
       "and continue the booking process"
     );
   } else {
-    console.log("time:", slotLocalTime.format());
+    log("time:", slotLocalTime.format());
   }
-  console.log("link:", getAppointmentUrl(slotLocalTime, slot.slot.gym_id));
-  console.log("--------");
+  log("link:", getAppointmentUrl(slotLocalTime, slot.slot.gym_id));
+  log("--------");
 }
 
 const testSlot = {
@@ -84,17 +85,16 @@ const testSlot = {
 };
 
 (async () => {
-  await postSlot(testSlot);
-  await postSlot(testSlot);
-  await postSlot(testSlot);
-
   while (1) {
     const slots = await getSlots();
     if (slots.length === 0) {
-      console.log("No Slots found :(");
+      log("No Slots found :(");
     } else {
-      console.log(`Found slots!`);
-      slots.forEach((slot) => printSlot(slot));
+      log(`Found slots!`);
+      slots.forEach((slot) => {
+        printSlot(slot);
+        postSlot(slot);
+      });
       await soundTheFanfares();
     }
     await sleep(60000);

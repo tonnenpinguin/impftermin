@@ -1,6 +1,6 @@
 import { TELEGRAM_API_KEY, TELEGRAM_CHAT_ID } from "./config";
 import fetch from "node-fetch";
-import { getAppointmentUrl, toLocalTime } from "./helpers";
+import { getAppointmentUrl, log, toLocalTime } from "./helpers";
 import { Slot, Vaccine } from "./types";
 import { slotAlreadySent, storeSlotSent } from "./db";
 
@@ -27,15 +27,15 @@ async function postMessage(url: string) {
 
 export async function postSlot(slot: Slot) {
   if (slotAlreadySent(slot.slot.id)) {
-    console.log("Slot already sent to telegram");
+    log("Slot already sent to telegram");
     return;
   }
   const message = buildMessage(slot);
   const url = getUrl(message);
   const response = await postMessage(url);
-  console.log("Telegram api ok:", response.ok);
+  log("Telegram api ok:", response.ok);
   if (response.ok) {
-    console.log("storing slot sent");
+    log("storing slot sent");
     await storeSlotSent(slot.slot.id);
   }
 }

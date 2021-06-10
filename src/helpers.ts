@@ -24,8 +24,19 @@ async function soundTheFanfares() {
 }
 
 function getAppointmentUrl(date: moment.Moment, vaccine: Vaccine) {
-  const dateStr = date.format("YYYY-MM-DD");
-  return `https://vac.no-q.info/impfstation-wandsbek/checkins#/${vaccine}/${dateStr}`;
+  const dateStr = date.format("YYYY-MM-DD/HH:mm");
+  return `https://vac.no-q.info/impfstation-wandsbek/checkins#/${vaccine}/${dateStr}/1`;
 }
 
-export { toLocalTime, isInPast, sleep, soundTheFanfares, getAppointmentUrl };
+function log(...args: any[]) {
+  console.log(`[${moment().local().format("HH:mm:ss")}]:`, ...args);
+}
+
+export {
+  toLocalTime,
+  isInPast,
+  sleep,
+  soundTheFanfares,
+  getAppointmentUrl,
+  log,
+};
