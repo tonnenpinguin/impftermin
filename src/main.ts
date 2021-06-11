@@ -20,6 +20,11 @@ const vaccineEntries = Object.entries(Vaccine).filter(
   ([x, y]) => typeof x === "string" && typeof y === "number"
 );
 
+function getAppointmentUrl(date: moment.Moment, vaccine: Vaccine) {
+  const dateStr = date.format("YYYY-MM-DD");
+  return `https://vac.no-q.info/impfstation-wandsbek/checkins#/${vaccine}/${dateStr}`;
+}
+
 const CHECK_DAYS_FROM_NOW = 14;
 
 async function getSlots() {
@@ -62,6 +67,7 @@ function printSlot(slot: Slot) {
   } else {
     console.log("time:", slotLocalTime.format());
   }
+  console.log("link:", getAppointmentUrl(slotLocalTime, slot.slot.gym_id));
   console.log("--------");
 }
 
