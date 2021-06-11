@@ -45,7 +45,7 @@ const vaccineEntries = Object.entries(Vaccine).filter(
   ([x, y]) => typeof x === "string" && typeof y === "number"
 );
 
-const CHECK_DAYS_FROM_NOW = 31;
+const CHECK_DAYS_FROM_NOW = 14;
 
 async function getSlots() {
   const allSlots: Slot[] = [];
@@ -61,16 +61,32 @@ async function getSlots() {
       }
     );
     await Promise.all(promises);
-    //   console.log(`Checking date ${dateToCheck.toString()}`);
-    //   console.log(slots);
   }
-  if (allSlots.length === 0) {
-    console.log("No Slots found :(");
-  } else {
-    console.log(`Found slots!`, allSlots);
+  return allSlots;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function soundTheFanfares() {
+  while (1) {
+    process.stderr.write("\x07");
+    await sleep(100);
   }
 }
 
 (async () => {
-  console.log(await getSlots());
+  while (1) {
+    const slots = await getSlots();
+    if (slots.length === 0) {
+      console.log("No Slots found :(");
+    } else {
+      console.log(`Found slots!`, slots);
+      await soundTheFanfares();
+    }
+    await sleep(60000);
+  }
 })();
