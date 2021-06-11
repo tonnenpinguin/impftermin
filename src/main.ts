@@ -1,33 +1,6 @@
 import moment from "moment";
 import fetch from "node-fetch";
-
-export enum Vaccine {
-  ASTRA_ZENECA = 3,
-  BIONTECH = 2,
-  JOHNSON = 68,
-}
-
-export type Slot = {
-  slot: {
-    id: number;
-    gym_id: number;
-    slot_rule_id: number;
-    check_in_at: string;
-    interval: number;
-    duration: number;
-    bookings_count: number;
-    spots_count: number;
-    created_at: string;
-    updated_at: string;
-    public_booking_disabled: boolean;
-  };
-  free_spots: number;
-  slot_area_id: number;
-};
-
-export type ApiResponse = {
-  slots: Slot[];
-};
+import { ApiResponse, Slot, Vaccine } from "./types";
 
 function getRequestUrl(date: moment.Moment, vaccine: Vaccine) {
   const dateStr = date.format("YYYY/MM/DD");
@@ -38,7 +11,9 @@ async function getFreeSlotsForDay(date: moment.Moment, vaccine: Vaccine) {
   const requestUrl = getRequestUrl(date, vaccine);
   const response = await fetch(requestUrl, { method: "GET" });
   const result: ApiResponse = await response.json();
-  return result.slots.filter((slot) => slot.free_spots > 0);
+  const r = result.slots.filter((slot) => slot.free_spots > 0);
+
+  return r;
 }
 
 const vaccineEntries = Object.entries(Vaccine).filter(
@@ -65,6 +40,31 @@ async function getSlots() {
   return allSlots;
 }
 
+function toLocalTime(timestamp: string) {
+  return moment(timestamp).local();
+}
+
+function isInPast(checkInTime: moment.Moment): boolean {
+  const now = moment().local();
+  return checkInTime < now;
+}
+
+function printSlot(slot: Slot) {
+  const slotLocalTime = toLocalTime(slot.slot.check_in_at);
+  console.log("Vaccine:", Vaccine[slot.slot.gym_id]);
+  if (isInPast(slotLocalTime)) {
+    console.log("!! Slot is in the past !!");
+    console.log(
+      "Please reset your time to something before",
+      slotLocalTime.format(),
+      "and continue the booking process"
+    );
+  } else {
+    console.log("time:", slotLocalTime.format());
+  }
+  console.log("--------");
+}
+
 function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -84,7 +84,8 @@ async function soundTheFanfares() {
     if (slots.length === 0) {
       console.log("No Slots found :(");
     } else {
-      console.log(`Found slots!`, slots);
+      console.log(`Found slots!`);
+      slots.forEach((slot) => printSlot(slot));
       await soundTheFanfares();
     }
     await sleep(60000);
