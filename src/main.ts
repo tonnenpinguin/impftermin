@@ -1,5 +1,13 @@
 import moment from "moment";
 import fetch from "node-fetch";
+import {
+  getAppointmentUrl,
+  isInPast,
+  sleep,
+  soundTheFanfares,
+  toLocalTime,
+} from "./helpers";
+import { postSlot } from "./telegram";
 import { ApiResponse, Slot, Vaccine } from "./types";
 
 function getRequestUrl(date: moment.Moment, vaccine: Vaccine) {
@@ -19,11 +27,6 @@ async function getFreeSlotsForDay(date: moment.Moment, vaccine: Vaccine) {
 const vaccineEntries = Object.entries(Vaccine).filter(
   ([x, y]) => typeof x === "string" && typeof y === "number"
 );
-
-function getAppointmentUrl(date: moment.Moment, vaccine: Vaccine) {
-  const dateStr = date.format("YYYY-MM-DD");
-  return `https://vac.no-q.info/impfstation-wandsbek/checkins#/${vaccine}/${dateStr}`;
-}
 
 const CHECK_DAYS_FROM_NOW = 14;
 
@@ -45,15 +48,6 @@ async function getSlots() {
   return allSlots;
 }
 
-function toLocalTime(timestamp: string) {
-  return moment(timestamp).local();
-}
-
-function isInPast(checkInTime: moment.Moment): boolean {
-  const now = moment().local();
-  return checkInTime < now;
-}
-
 function printSlot(slot: Slot) {
   const slotLocalTime = toLocalTime(slot.slot.check_in_at);
   console.log("Vaccine:", Vaccine[slot.slot.gym_id]);
@@ -71,20 +65,29 @@ function printSlot(slot: Slot) {
   console.log("--------");
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-async function soundTheFanfares() {
-  while (1) {
-    process.stderr.write("\x07");
-    await sleep(100);
-  }
-}
+const testSlot = {
+  slot: {
+    id: 2834,
+    gym_id: 3,
+    slot_rule_id: 111,
+    check_in_at: "2021-06-11T11:00:00.000Z",
+    interval: 10,
+    duration: 10,
+    bookings_count: 8,
+    spots_count: 5,
+    created_at: "2021-06-10T05:16:24.000Z",
+    updated_at: "2021-06-11T11:42:54.000Z",
+    public_booking_disabled: false,
+  },
+  free_spots: 4,
+  slot_area_id: 3,
+};
 
 (async () => {
+  await postSlot(testSlot);
+  await postSlot(testSlot);
+  await postSlot(testSlot);
+
   while (1) {
     const slots = await getSlots();
     if (slots.length === 0) {

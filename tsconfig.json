@@ -2,9 +2,9 @@
     "compilerOptions": {
         "noEmit": true,
         "strictNullChecks": true,
-        "module": "commonjs",
+        "module": "esnext",
         "esModuleInterop": true,
-        "target": "es6",
+        "target": "es2020",
         "noImplicitAny": true,
         "moduleResolution": "node",
         "sourceMap": true,
