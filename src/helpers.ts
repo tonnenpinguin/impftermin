@@ -17,7 +17,7 @@ function sleep(ms: number) {
 }
 
 async function soundTheFanfares() {
-  while (1) {
+  for (let i = 0; i < 3; i++) {
     process.stderr.write("\x07");
     await sleep(100);
   }

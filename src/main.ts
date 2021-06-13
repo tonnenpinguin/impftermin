@@ -21,8 +21,7 @@ async function getFreeSlotsForDay(date: moment.Moment, vaccine: Vaccine) {
   const response = await fetch(requestUrl, { method: "GET" });
   const result: ApiResponse = await response.json();
   const r = result.slots.filter((slot) => slot.free_spots > 0);
-
-  return result.slots;
+  return r;
 }
 
 const vaccineEntries = Object.entries(Vaccine).filter(
@@ -95,7 +94,7 @@ const testSlot = {
         printSlot(slot);
         postSlot(slot);
       });
-      await soundTheFanfares();
+      soundTheFanfares();
     }
     await sleep(60000);
   }
