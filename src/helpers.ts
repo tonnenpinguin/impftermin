@@ -25,7 +25,7 @@ async function soundTheFanfares() {
 
 function getAppointmentUrl(date: moment.Moment, vaccine: Vaccine) {
   const dateStr = date.format("YYYY-MM-DD/HH:mm");
-  return `https://vac.no-q.info/impfstation-wandsbek/checkins#/${vaccine}/${dateStr}/1`;
+  return `https://vac.no-q.info/${vaccine.locationSlug}/checkins#/${vaccine.id}/${dateStr}/1`;
 }
 
 function log(...args: any[]) {

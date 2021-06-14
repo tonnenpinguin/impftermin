@@ -1,7 +1,7 @@
 import { TELEGRAM_API_KEY, TELEGRAM_CHAT_ID } from "./config";
 import fetch from "node-fetch";
 import { getAppointmentUrl, log, toLocalTime } from "./helpers";
-import { Slot, Vaccine } from "./types";
+import { Slot } from "./types";
 import { slotAlreadySent, storeSlotSent } from "./db";
 
 function getUrl(message: string) {
@@ -9,14 +9,13 @@ function getUrl(message: string) {
 }
 
 function buildMessage(slot: Slot) {
-  const slotLocalTime = toLocalTime(slot.slot.check_in_at);
-  const vaccine = slot.slot.gym_id;
+  const slotLocalTime = toLocalTime(slot.checkInAt);
 
-  const msg = `Found slot for ${Vaccine[vaccine]} with ${
-    slot.free_spots
+  const msg = `Found slot for ${slot.vaccine.name} with ${
+    slot.freeSpots
   } free spots on ${slotLocalTime.format("DD.MM.YY")} at ${slotLocalTime.format(
     "HH:mm"
-  )}. Book here: ${getAppointmentUrl(slotLocalTime, vaccine)}`;
+  )}. Book here: ${getAppointmentUrl(slotLocalTime, slot.vaccine)}`;
   return encodeURI(msg).replace(/#/g, "%23");
 }
 
@@ -26,7 +25,7 @@ async function postMessage(url: string) {
 }
 
 export async function postSlot(slot: Slot) {
-  if (slotAlreadySent(slot.slot.id)) {
+  if (slotAlreadySent(slot.id)) {
     log("Slot already sent to telegram");
     return;
   }
@@ -36,6 +35,6 @@ export async function postSlot(slot: Slot) {
   log("Telegram api ok:", response.ok);
   if (response.ok) {
     log("storing slot sent");
-    await storeSlotSent(slot.slot.id);
+    await storeSlotSent(slot.id);
   }
 }

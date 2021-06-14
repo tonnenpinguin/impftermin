@@ -1,27 +1,27 @@
-export enum Vaccine {
-  ASTRA_ZENECA = 3,
-  BIONTECH = 2,
-  JOHNSON = 68,
-}
-
-export type Slot = {
-  slot: {
-    id: number;
-    gym_id: number;
-    slot_rule_id: number;
-    check_in_at: string;
-    interval: number;
-    duration: number;
-    bookings_count: number;
-    spots_count: number;
-    created_at: string;
-    updated_at: string;
-    public_booking_disabled: boolean;
-  };
-  free_spots: number;
-  slot_area_id: number;
+export type Vaccine = {
+  id: number;
+  name: string;
+  locationId: number;
+  locationName: string;
+  locationSlug: string;
 };
 
-export type ApiResponse = {
-  slots: Slot[];
+export type Slot = {
+  id: number;
+  vaccine: Vaccine;
+  checkInAt: string;
+  bookingsCount: number;
+  spotsCount: number;
+  publicBookingDisabled: boolean;
+  freeSpots: number;
+};
+
+export type VacLocation = {
+  id: number;
+  name: string;
+  address: string;
+  zip: string;
+  city: string;
+  country?: string;
+  vaccines: Vaccine[];
 };
